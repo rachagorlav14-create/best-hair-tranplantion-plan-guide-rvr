@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/Disclaimer";
-import { X, ScaleIcon } from "lucide-react";
+import { X, Scale } from "lucide-react";
 import { toast } from "sonner";
 
 const KEY = "ht_shortlist";
@@ -74,7 +74,7 @@ export default function ClinicCompare() {
     <div className="container py-10">
       <header className="mb-6">
         <h1 className="font-display text-3xl md:text-4xl font-bold flex items-center gap-2">
-          <ScaleIcon className="h-7 w-7 text-primary" /> Compare Clinics
+          <Scale className="h-7 w-7 text-primary" /> Compare Clinics
         </h1>
         <p className="text-muted-foreground mt-2">Side-by-side view of clinics you shortlisted.</p>
       </header>

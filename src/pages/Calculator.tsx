@@ -49,7 +49,11 @@ export default function Calculator() {
 
   const next = () => {
     if (step < TOTAL_STEPS - 1) setStep(step + 1);
-    else setResult(estimate(inputs));
+    else {
+      const r = estimate(inputs);
+      setResult(r);
+      try { localStorage.setItem("ht_calc_last", JSON.stringify(r)); } catch {}
+    }
   };
   const back = () => setStep(Math.max(0, step - 1));
   const reset = () => { setInputs(initial); setStep(0); setResult(null); setNotes(""); };

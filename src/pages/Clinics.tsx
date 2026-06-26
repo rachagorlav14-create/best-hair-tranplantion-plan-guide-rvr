@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/Disclaimer";
 import { supabase } from "@/integrations/supabase/client";
 import { COUNTRIES, INDIA_CITIES, TECHNIQUES } from "@/data/options";
-import { Star, ScaleIcon, Plus, Check } from "lucide-react";
+import { Star, Scale, Plus, Check } from "lucide-react";
 import { toast } from "sonner";
 
 type Clinic = {
@@ -125,7 +125,7 @@ export default function Clinics() {
           <p className="text-muted-foreground mt-2">Filter by country, city, technique, budget and more. Add up to several clinics to compare.</p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/compare"><ScaleIcon className="h-4 w-4 mr-1" /> Compare ({shortlist.length})</Link>
+          <Link to="/compare"><Scale className="h-4 w-4 mr-1" /> Compare ({shortlist.length})</Link>
         </Button>
       </header>
 
