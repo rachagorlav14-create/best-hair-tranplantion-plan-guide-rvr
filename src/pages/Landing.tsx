@@ -9,7 +9,7 @@ import hero from "@/assets/hero.jpg";
 
 const features = [
   { icon: Calculator, title: "Stage & Graft Calculator", body: "Guided wizard estimates Norwood/Ludwig stage and a graft range with confidence level.", to: "/calculator" },
-  { icon: Camera, title: "Photo Planner", body: "Photo checklist and visual planner to mark thinning areas. Privacy-first.", to: "/photo-planner" },
+  { icon: Camera, title: "Photo Assessment", body: "Photo checklist and visual planner to mark thinning areas. Privacy-first.", to: "/photo-assessment" },
   { icon: Hospital, title: "Clinic Directory", body: "Compare clinics across India, Turkey, Thailand, UAE, UK, USA & Europe.", to: "/clinics" },
   { icon: ClipboardList, title: "Cost Estimator", body: "Low/medium/high cost ranges by country, technique and add-ons.", to: "/cost" },
   { icon: HeartPulse, title: "Recovery Tracker", body: "Day-by-day timeline from Day 0 through 12-month maturity with daily checklist.", to: "/recovery" },

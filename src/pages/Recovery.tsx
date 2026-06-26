@@ -1,144 +1,158 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Disclaimer } from "@/components/Disclaimer";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { differenceInDays, format } from "date-fns";
+import { Disclaimer } from "@/components/Disclaimer";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { POSTOP_TIMELINE } from "@/data/options";
+import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
-const milestones = [
-  { day: 0, title: "Day 0 — Surgery", phase: "Procedure", tasks: ["Follow doctor instructions exactly", "Rest with head elevated", "Avoid touching grafts"] },
-  { day: 1, title: "Day 1 — First wash & check", phase: "Healing", tasks: ["Clinic wash / inspection", "Saline spray every 1–2 hours", "Sleep semi-upright"] },
-  { day: 4, title: "Days 2–7 — Swelling & scabs", phase: "Healing", tasks: ["Gentle washes", "Cold compress on forehead (not on grafts)", "No exercise, no alcohol, no smoking"] },
-  { day: 10, title: "Days 8–14 — Scab removal", phase: "Healing", tasks: ["Gentle massage during wash to remove scabs", "Avoid direct sun", "Continue meds as prescribed"] },
-  { day: 30, title: "Weeks 2–8 — Shedding phase", phase: "Shedding", tasks: ["Transplanted hairs shed — this is normal", "No panic; follicles remain in place", "Resume light exercise after surgeon approval"] },
-  { day: 100, title: "Months 3–4 — Early growth", phase: "Early growth", tasks: ["Fine new hairs begin emerging", "Stay consistent with minoxidil if prescribed", "Photo at fixed angle & lighting"] },
-  { day: 180, title: "Month 6 — Visible improvement", phase: "Growth", tasks: ["About 50–60% of final density", "Compare photos vs Day 0", "Discuss progress with surgeon"] },
-  { day: 365, title: "Months 9–12 — Maturity", phase: "Maturity", tasks: ["Final hairline texture matures", "Crown may need longer (12–18 months)", "Document final result"] },
-  { day: 540, title: "Month 18 — Crown maturity", phase: "Maturity", tasks: ["Crown reaches its final density", "Discuss any second sitting if planned"] },
-];
+type Log = {
+  id: string;
+  log_date: string;
+  day_number: number | null;
+  pain: number | null;
+  swelling: number | null;
+  redness: number | null;
+  itching: number | null;
+  scab_status: string | null;
+  shedding_status: string | null;
+  medicines_taken: boolean | null;
+  wash_done: boolean | null;
+  photo_uploaded: boolean | null;
+  notes: string | null;
+};
 
-const dailyChecklistTemplate = [
-  "Saline spray as instructed",
-  "Sleep semi-upright (first 5 nights)",
-  "No cap / helmet (first 7 days)",
-  "No exercise (first 10–14 days)",
-  "No sun / direct heat",
-  "Take prescribed medicines",
-  "Note pain / redness / swelling level",
-];
-
-const warningSymptoms = [
-  "Severe or worsening pain",
-  "Pus / foul smell from grafts",
-  "Fever > 101°F (38.3°C)",
-  "Spreading redness or red streaks",
-  "Heavy bleeding that won't stop",
-  "Allergic reaction (hives, swelling, breathing trouble)",
-  "Chest pain / shortness of breath",
-];
+const todayStr = () => new Date().toISOString().slice(0, 10);
 
 export default function Recovery() {
-  const [procedureDate, setProcedureDate] = useState<string>(() => format(new Date(), "yyyy-MM-dd"));
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const { user } = useAuth();
+  const [logs, setLogs] = useState<Log[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [draft, setDraft] = useState<Partial<Log>>({
+    log_date: todayStr(), day_number: 1, pain: 2, swelling: 1, redness: 2, itching: 1,
+    scab_status: "forming", shedding_status: "none",
+    medicines_taken: false, wash_done: false, photo_uploaded: false, notes: "",
+  });
 
-  const today = new Date();
-  const daysSince = procedureDate ? differenceInDays(today, new Date(procedureDate)) : 0;
+  const load = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("recovery_logs").select("*").eq("user_id", user.id).order("log_date", { ascending: false });
+    setLogs((data as any) || []);
+    setLoading(false);
+  };
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [user]);
 
-  const phaseInfo = useMemo(() => {
-    if (daysSince < 0) return { label: "Pre-op", pct: 0 };
-    if (daysSince <= 7) return { label: "Healing", pct: 10 };
-    if (daysSince <= 30) return { label: "Shedding", pct: 25 };
-    if (daysSince <= 120) return { label: "Early growth", pct: 45 };
-    if (daysSince <= 240) return { label: "Density improvement", pct: 70 };
-    if (daysSince <= 540) return { label: "Maturity", pct: 95 };
-    return { label: "Final", pct: 100 };
-  }, [daysSince]);
+  const addLog = async () => {
+    if (!user) return;
+    const { error } = await supabase.from("recovery_logs").insert({
+      user_id: user.id, ...draft, log_date: draft.log_date || todayStr(),
+    } as any);
+    if (error) toast.error(error.message);
+    else { toast.success("Day logged"); load(); }
+  };
+
+  const remove = async (id: string) => {
+    await supabase.from("recovery_logs").delete().eq("id", id);
+    load();
+  };
 
   return (
-    <div className="container py-10 md:py-14 space-y-8">
-      <header>
-        <h1 className="font-display text-3xl md:text-4xl font-bold">Recovery Tracker</h1>
-        <p className="text-muted-foreground mt-2">Calendar-based timeline from your procedure date through 12–18 month maturity.</p>
+    <div className="container py-10 max-w-5xl">
+      <header className="mb-6">
+        <h1 className="font-display text-3xl md:text-4xl font-bold">Post-Op Recovery Tracker</h1>
+        <p className="text-muted-foreground mt-2">Log daily pain, swelling, scabbing and care. Compare against the typical timeline.</p>
       </header>
 
-      <Disclaimer tone="info">
-        General educational schedule — always follow <strong>your own surgeon's</strong> specific written post-op instructions.
+      <Disclaimer tone="warning" className="mb-6">
+        Contact your surgeon immediately for severe pain, heavy bleeding, fever, pus, or sudden swelling.
+        This tracker is not a substitute for medical care.
       </Disclaimer>
 
-      <Card className="bg-gradient-card">
-        <CardContent className="pt-6 grid md:grid-cols-3 gap-4 items-end">
-          <div>
-            <Label>Procedure date</Label>
-            <Input type="date" value={procedureDate} onChange={(e) => setProcedureDate(e.target.value)} />
-          </div>
-          <div className="md:col-span-2">
-            <div className="flex items-baseline justify-between mb-2">
-              <div>
-                <div className="text-xs text-muted-foreground">Days since procedure</div>
-                <div className="font-display text-2xl font-bold">{daysSince}</div>
-              </div>
-              <Badge variant="secondary">{phaseInfo.label}</Badge>
+      <div className="grid lg:grid-cols-[1fr_360px] gap-6">
+        <Card>
+          <CardHeader><CardTitle className="text-base">Typical timeline</CardTitle></CardHeader>
+          <CardContent>
+            <ol className="relative border-l ml-2 space-y-4">
+              {POSTOP_TIMELINE.map((t) => (
+                <li key={t.period} className="ml-4">
+                  <span className="absolute -left-1.5 mt-1 h-3 w-3 rounded-full bg-primary" />
+                  <div className="font-semibold">{t.period}</div>
+                  <div className="text-sm text-muted-foreground">{t.body}</div>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader><CardTitle className="text-base">Log today</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Date</Label><Input type="date" value={draft.log_date || ""} onChange={(e) => setDraft({ ...draft, log_date: e.target.value })} /></div>
+              <div><Label>Day #</Label><Input type="number" value={draft.day_number ?? ""} onChange={(e) => setDraft({ ...draft, day_number: e.target.value ? Number(e.target.value) : null })} /></div>
             </div>
-            <Progress value={phaseInfo.pct} />
-            <div className="text-xs text-muted-foreground mt-1">{phaseInfo.pct}% through typical recovery journey</div>
-          </div>
+            {(["pain", "swelling", "redness", "itching"] as const).map((k) => (
+              <div key={k}>
+                <Label className="capitalize">{k}: <span className="text-primary font-semibold">{draft[k] ?? 0}/5</span></Label>
+                <Slider value={[draft[k] ?? 0]} min={0} max={5} step={1} onValueChange={([v]) => setDraft({ ...draft, [k]: v } as any)} />
+              </div>
+            ))}
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Scab status</Label><Input value={draft.scab_status || ""} onChange={(e) => setDraft({ ...draft, scab_status: e.target.value })} /></div>
+              <div><Label>Shedding</Label><Input value={draft.shedding_status || ""} onChange={(e) => setDraft({ ...draft, shedding_status: e.target.value })} /></div>
+            </div>
+            <div className="space-y-1">
+              {([["medicines_taken", "Medicines taken"], ["wash_done", "Wash done"], ["photo_uploaded", "Photo uploaded"]] as const).map(([k, label]) => (
+                <label key={k} className="flex items-center gap-2 text-sm">
+                  <Checkbox checked={!!draft[k]} onCheckedChange={(v) => setDraft({ ...draft, [k]: !!v } as any)} /> {label}
+                </label>
+              ))}
+            </div>
+            <Textarea rows={2} placeholder="Notes" value={draft.notes || ""} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
+            <Button className="w-full" onClick={addLog}>Save log</Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card className="mt-6">
+        <CardHeader><CardTitle className="text-base">Your logs</CardTitle></CardHeader>
+        <CardContent>
+          {loading ? <p className="text-muted-foreground">Loading…</p> :
+            logs.length === 0 ? <p className="text-muted-foreground text-sm">No logs yet.</p> :
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b text-left">
+                  <th className="p-2">Date</th><th className="p-2">Day</th><th className="p-2">Pain</th>
+                  <th className="p-2">Swell</th><th className="p-2">Red</th><th className="p-2">Itch</th>
+                  <th className="p-2">Scab</th><th className="p-2">Notes</th><th className="p-2"></th>
+                </tr></thead>
+                <tbody>
+                  {logs.map((l) => (
+                    <tr key={l.id} className="border-b last:border-0">
+                      <td className="p-2">{l.log_date}</td>
+                      <td className="p-2">{l.day_number ?? "—"}</td>
+                      <td className="p-2">{l.pain ?? "—"}</td>
+                      <td className="p-2">{l.swelling ?? "—"}</td>
+                      <td className="p-2">{l.redness ?? "—"}</td>
+                      <td className="p-2">{l.itching ?? "—"}</td>
+                      <td className="p-2">{l.scab_status || "—"}</td>
+                      <td className="p-2 text-muted-foreground max-w-[240px] truncate">{l.notes}</td>
+                      <td className="p-2"><Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(l.id)}><Trash2 className="h-4 w-4" /></Button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>}
         </CardContent>
       </Card>
-
-      <section>
-        <h2 className="font-display text-2xl font-bold mb-4">Timeline</h2>
-        <div className="relative pl-6 border-l-2 border-border space-y-5">
-          {milestones.map((m) => {
-            const reached = daysSince >= m.day;
-            return (
-              <div key={m.day} className="relative">
-                <span className={`absolute -left-[33px] top-1.5 h-4 w-4 rounded-full border-2 ${reached ? "bg-primary border-primary" : "bg-background border-muted-foreground/40"}`} />
-                <Card className={reached ? "border-primary/30" : ""}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between flex-wrap gap-2">
-                      <CardTitle className="text-base">{m.title}</CardTitle>
-                      <Badge variant={reached ? "default" : "outline"}>{m.phase}</Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc pl-5">
-                      {m.tasks.map((t) => <li key={t}>{t}</li>)}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="grid md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle>Today's checklist</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {dailyChecklistTemplate.map((task) => (
-              <label key={task} className="flex items-start gap-2 text-sm">
-                <Checkbox checked={!!checked[task]} onCheckedChange={(v) => setChecked((s) => ({ ...s, [task]: !!v }))} />
-                <span className={checked[task] ? "line-through text-muted-foreground" : ""}>{task}</span>
-              </label>
-            ))}
-            <p className="text-xs text-muted-foreground pt-2">Checklist resets when the page reloads — full persistence will be added with Lovable Cloud.</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-destructive/40">
-          <CardHeader><CardTitle className="text-destructive">When to seek urgent medical care</CardTitle></CardHeader>
-          <CardContent>
-            <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-5">
-              {warningSymptoms.map((s) => <li key={s}>{s}</li>)}
-            </ul>
-            <p className="text-xs text-destructive font-medium mt-3">Contact your surgeon or visit emergency care immediately for any of these symptoms.</p>
-          </CardContent>
-        </Card>
-      </section>
     </div>
   );
 }

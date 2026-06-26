@@ -30,7 +30,7 @@ export default function SiteFooter() {
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/recovery" className="hover:text-primary">Recovery Timeline</Link></li>
             <li><Link to="/medications" className="hover:text-primary">Medication Tracker</Link></li>
-            <li><Link to="/photo-planner" className="hover:text-primary">Photo Planner</Link></li>
+            <li><Link to="/photo-assessment" className="hover:text-primary">Photo Assessment</Link></li>
           </ul>
         </div>
         <div>
