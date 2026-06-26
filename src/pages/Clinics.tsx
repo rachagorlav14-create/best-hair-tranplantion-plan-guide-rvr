@@ -1,197 +1,283 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Disclaimer } from "@/components/Disclaimer";
-import { SAMPLE_CLINICS, Clinic } from "@/data/sample";
-import { Link } from "react-router-dom";
-import { CheckCircle2, MapPin, Star, ShieldAlert, Filter, XCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { COUNTRIES, INDIA_CITIES, TECHNIQUES } from "@/data/options";
+import { Star, ScaleIcon, Plus, Check } from "lucide-react";
+import { toast } from "sonner";
 
-const REGIONS = ["All", "India", "Turkey", "Thailand", "UAE", "UK", "USA", "Europe", "Australia"] as const;
+type Clinic = {
+  id: string;
+  name: string; city: string; state: string | null; country: string;
+  doctors: string[] | null; surgeon_led: boolean | null;
+  techniques: string[] | null;
+  price_per_graft_low: number | null; price_per_graft_high: number | null;
+  currency: string | null;
+  min_package_price: number | null;
+  google_rating: number | null; review_count: number | null;
+  verified_reviews: number | null;
+  status: string;
+  supports_female: boolean | null; supports_beard: boolean | null;
+  supports_crown: boolean | null; supports_mega_session: boolean | null;
+  emi_available: boolean | null;
+};
+
+const SHORTLIST_KEY = "ht_shortlist";
+
+const statusVariant = (s: string) => {
+  if (s === "verified") return "default";
+  if (s === "sample") return "secondary";
+  if (s === "needs_verification") return "destructive";
+  return "outline";
+};
+
+const statusLabel = (s: string) =>
+  ({ verified: "Verified", sample: "Sample", user_added: "User-added", needs_verification: "Needs verification" } as any)[s] || s;
 
 export default function Clinics() {
-  const [region, setRegion] = useState<(typeof REGIONS)[number]>("All");
-  const [q, setQ] = useState("");
-  const [technique, setTechnique] = useState("any");
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [loading, setLoading] = useState(true);
   const [shortlist, setShortlist] = useState<string[]>([]);
 
+  const country = params.get("country") || "";
+  const city = params.get("city") || "";
+  const technique = params.get("technique") || "";
+  const q = params.get("q") || "";
+  const minRating = Number(params.get("minRating") || 0);
+  const maxPrice = Number(params.get("maxPrice") || 0);
+  const surgeonOnly = params.get("surgeon") === "1";
+  const verifiedOnly = params.get("verified") === "1";
+  const female = params.get("female") === "1";
+  const beard = params.get("beard") === "1";
+  const crown = params.get("crown") === "1";
+  const mega = params.get("mega") === "1";
+  const emi = params.get("emi") === "1";
+
+  const updateParam = (k: string, v: string) => {
+    const next = new URLSearchParams(params);
+    if (!v) next.delete(k); else next.set(k, v);
+    if (k === "country") next.delete("city");
+    setParams(next, { replace: true });
+  };
+  const toggleParam = (k: string) => {
+    const next = new URLSearchParams(params);
+    if (next.get(k) === "1") next.delete(k); else next.set(k, "1");
+    setParams(next, { replace: true });
+  };
+
+  useEffect(() => {
+    try { setShortlist(JSON.parse(localStorage.getItem(SHORTLIST_KEY) || "[]")); } catch {}
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase
+        .from("clinics")
+        .select("*")
+        .order("google_rating", { ascending: false, nullsFirst: false });
+      setClinics((data as any) || []);
+      setLoading(false);
+    })();
+  }, []);
+
   const filtered = useMemo(() => {
-    return SAMPLE_CLINICS.filter((c) => {
-      if (region !== "All" && c.region !== region) return false;
-      if (verifiedOnly && !c.verified) return false;
-      if (technique !== "any" && !c.techniques.includes(technique)) return false;
-      if (q && !`${c.name} ${c.city} ${c.country}`.toLowerCase().includes(q.toLowerCase())) return false;
+    return clinics.filter((c) => {
+      if (country && c.country !== country) return false;
+      if (city && c.city !== city) return false;
+      if (technique && !(c.techniques || []).includes(technique)) return false;
+      if (q && !`${c.name} ${c.city} ${(c.doctors || []).join(" ")}`.toLowerCase().includes(q.toLowerCase())) return false;
+      if (minRating && (c.google_rating || 0) < minRating) return false;
+      if (maxPrice && (c.price_per_graft_high || 0) > maxPrice) return false;
+      if (surgeonOnly && !c.surgeon_led) return false;
+      if (verifiedOnly && c.status !== "verified") return false;
+      if (female && !c.supports_female) return false;
+      if (beard && !c.supports_beard) return false;
+      if (crown && !c.supports_crown) return false;
+      if (mega && !c.supports_mega_session) return false;
+      if (emi && !c.emi_available) return false;
       return true;
     });
-  }, [region, q, technique, verifiedOnly]);
+  }, [clinics, country, city, technique, q, minRating, maxPrice, surgeonOnly, verifiedOnly, female, beard, crown, mega, emi]);
 
-  const toggleShortlist = (id: string) =>
-    setShortlist((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
-  const shortlistedClinics = SAMPLE_CLINICS.filter((c) => shortlist.includes(c.id));
+  const toggleShortlist = (id: string) => {
+    setShortlist((s) => {
+      const next = s.includes(id) ? s.filter((x) => x !== id) : [...s, id];
+      localStorage.setItem(SHORTLIST_KEY, JSON.stringify(next));
+      toast.success(s.includes(id) ? "Removed from compare list" : "Added to compare list");
+      return next;
+    });
+  };
 
   return (
-    <div className="container py-10 md:py-14 space-y-8">
-      <header>
-        <h1 className="font-display text-3xl md:text-4xl font-bold">Clinic Directory</h1>
-        <p className="text-muted-foreground mt-2">Compare clinics by region, technique, doctor involvement and verification.</p>
+    <div className="container py-10">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-3xl md:text-4xl font-bold">Explore Clinics</h1>
+          <p className="text-muted-foreground mt-2">Filter by country, city, technique, budget and more. Add up to several clinics to compare.</p>
+        </div>
+        <Button asChild variant="outline">
+          <Link to="/compare"><ScaleIcon className="h-4 w-4 mr-1" /> Compare ({shortlist.length})</Link>
+        </Button>
       </header>
 
-      <Disclaimer tone="warning">
-        All listings shown are <strong>sample data</strong> for demonstration. Reviews and outcomes are not real and must not be used for decision-making. Verified listings will be added once admin moderation is enabled.
+      <Disclaimer tone="warning" className="mb-6">
+        Listings marked <em>Sample</em>, <em>User-added</em> or <em>Needs verification</em> are not endorsed.
+        Always verify the doctor, address and pricing directly with the clinic.
       </Disclaimer>
 
-      <Tabs value={region} onValueChange={(v) => setRegion(v as typeof region)}>
-        <TabsList className="flex-wrap h-auto">
-          {REGIONS.map((r) => <TabsTrigger key={r} value={r}>{r}</TabsTrigger>)}
-        </TabsList>
-      </Tabs>
+      <div className="grid lg:grid-cols-[280px_1fr] gap-6">
+        <aside className="space-y-4">
+          <Card>
+            <CardHeader><CardTitle className="text-base">Filters</CardTitle></CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Label>Search</Label>
+                <Input value={q} onChange={(e) => updateParam("q", e.target.value)} placeholder="Clinic or doctor name" />
+              </div>
+              <div>
+                <Label>Country</Label>
+                <Select value={country} onValueChange={(v) => updateParam("country", v === "__all" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all">All</SelectItem>
+                    {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              {country === "India" && (
+                <div>
+                  <Label>City</Label>
+                  <Select value={city} onValueChange={(v) => updateParam("city", v === "__all" ? "" : v)}>
+                    <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all">All</SelectItem>
+                      {INDIA_CITIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              <div>
+                <Label>Technique</Label>
+                <Select value={technique} onValueChange={(v) => updateParam("technique", v === "__all" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__all">Any</SelectItem>
+                    {TECHNIQUES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Min rating</Label>
+                <Select value={String(minRating || "")} onValueChange={(v) => updateParam("minRating", v === "__any" ? "" : v)}>
+                  <SelectTrigger><SelectValue placeholder="Any" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__any">Any</SelectItem>
+                    <SelectItem value="4">4.0+</SelectItem>
+                    <SelectItem value="4.5">4.5+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Max price / graft</Label>
+                <Input
+                  type="number"
+                  value={maxPrice || ""}
+                  onChange={(e) => updateParam("maxPrice", e.target.value)}
+                  placeholder="e.g. 60"
+                />
+              </div>
 
-      <Card>
-        <CardContent className="pt-6 grid md:grid-cols-4 gap-3">
-          <div className="md:col-span-2">
-            <Input placeholder="Search by name or city" value={q} onChange={(e) => setQ(e.target.value)} />
-          </div>
-          <Select value={technique} onValueChange={setTechnique}>
-            <SelectTrigger><SelectValue placeholder="Technique" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="any">Any technique</SelectItem>
-              <SelectItem value="FUE">FUE</SelectItem>
-              <SelectItem value="FUT">FUT</SelectItem>
-              <SelectItem value="DHI">DHI</SelectItem>
-              <SelectItem value="Sapphire FUE">Sapphire FUE</SelectItem>
-              <SelectItem value="PRP">PRP</SelectItem>
-              <SelectItem value="GFC">GFC</SelectItem>
-            </SelectContent>
-          </Select>
-          <label className="flex items-center gap-2 text-sm">
-            <Checkbox checked={verifiedOnly} onCheckedChange={(v) => setVerifiedOnly(!!v)} />
-            Verified only
-          </label>
-        </CardContent>
-      </Card>
-
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filtered.map((c) => (
-          <ClinicCard key={c.id} clinic={c} shortlisted={shortlist.includes(c.id)} onToggle={() => toggleShortlist(c.id)} />
-        ))}
-        {filtered.length === 0 && (
-          <Card className="md:col-span-2 lg:col-span-3"><CardContent className="py-10 text-center text-muted-foreground">No clinics match your filters.</CardContent></Card>
-        )}
-      </div>
-
-      {shortlistedClinics.length > 0 && (
-        <Card className="bg-gradient-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Comparison ({shortlistedClinics.length})</CardTitle>
-              <Button size="sm" variant="ghost" onClick={() => setShortlist([])}><XCircle className="h-4 w-4 mr-1" /> Clear</Button>
-            </div>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase text-muted-foreground border-b">
-                <tr><th className="py-2 pr-3">Clinic</th><th className="pr-3">Region</th><th className="pr-3">Techniques</th><th className="pr-3">Doctor-led</th><th className="pr-3">Rating</th><th className="pr-3">Price/graft</th><th className="pr-3">Verified</th></tr>
-              </thead>
-              <tbody>
-                {shortlistedClinics.map((c) => (
-                  <tr key={c.id} className="border-b last:border-0">
-                    <td className="py-3 pr-3 font-medium">{c.name}<div className="text-xs text-muted-foreground">{c.city}, {c.country}</div></td>
-                    <td className="pr-3">{c.region}</td>
-                    <td className="pr-3">{c.techniques.join(", ")}</td>
-                    <td className="pr-3">{c.doctorLed ? "Yes" : "No"}</td>
-                    <td className="pr-3">{c.rating} ({c.reviews})</td>
-                    <td className="pr-3">{c.pricePerGraft.currency} {c.pricePerGraft.low}–{c.pricePerGraft.high}</td>
-                    <td className="pr-3">{c.verified ? <Badge className="bg-success text-success-foreground">Verified</Badge> : <Badge variant="outline">Unverified</Badge>}</td>
-                  </tr>
+              <div className="space-y-2 pt-2 border-t">
+                {([
+                  ["surgeon", "Surgeon-led only"],
+                  ["verified", "Verified only"],
+                  ["female", "Female HT support"],
+                  ["beard", "Beard / BHT"],
+                  ["crown", "Crown coverage"],
+                  ["mega", "Mega-session support"],
+                  ["emi", "EMI / finance available"],
+                ] as const).map(([k, label]) => (
+                  <label key={k} className="flex items-center gap-2 text-sm">
+                    <Checkbox checked={params.get(k) === "1"} onCheckedChange={() => toggleParam(k)} />
+                    {label}
+                  </label>
                 ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      )}
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
 
-      <ChecklistCard />
-    </div>
-  );
-}
-
-function ClinicCard({ clinic: c, shortlisted, onToggle }: { clinic: Clinic; shortlisted: boolean; onToggle: () => void }) {
-  return (
-    <Card className="flex flex-col">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <CardTitle className="text-base">{c.name}</CardTitle>
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-              <MapPin className="h-3.5 w-3.5" /> {c.city}, {c.country}
-            </div>
-          </div>
-          {c.verified ? (
-            <Badge className="bg-success text-success-foreground gap-1"><CheckCircle2 className="h-3 w-3" />Verified</Badge>
+        <section>
+          {loading ? (
+            <p className="text-muted-foreground">Loading clinics…</p>
+          ) : filtered.length === 0 ? (
+            <Card><CardContent className="py-10 text-center text-muted-foreground">No clinics match these filters.</CardContent></Card>
           ) : (
-            <Badge variant="outline">Unverified</Badge>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {filtered.map((c) => {
+                const inList = shortlist.includes(c.id);
+                return (
+                  <Card key={c.id} className="hover:shadow-elevated transition">
+                    <CardContent className="p-5 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <Link to={`/clinics/${c.id}`} className="font-semibold hover:text-primary leading-tight">
+                            {c.name}
+                          </Link>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {c.city}{c.state ? `, ${c.state}` : ""} · {c.country}
+                          </div>
+                        </div>
+                        <Badge variant={statusVariant(c.status) as any}>{statusLabel(c.status)}</Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {(c.techniques || []).slice(0, 4).map((t) => (
+                          <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+                        ))}
+                      </div>
+                      <div className="text-sm grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="text-xs text-muted-foreground">Price / graft</div>
+                          <div className="font-medium">
+                            {c.price_per_graft_low ? `${c.currency || "INR"} ${c.price_per_graft_low}–${c.price_per_graft_high}` : "—"}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">Rating</div>
+                          <div className="font-medium flex items-center gap-1">
+                            {c.google_rating ? (<><Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" /> {c.google_rating} <span className="text-xs text-muted-foreground">({c.review_count || 0})</span></>) : "—"}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <Button asChild size="sm" variant="outline" className="flex-1">
+                          <Link to={`/clinics/${c.id}`}>Details</Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={inList ? "secondary" : "default"}
+                          onClick={() => toggleShortlist(c.id)}
+                        >
+                          {inList ? <><Check className="h-3.5 w-3.5 mr-1" /> Added</> : <><Plus className="h-3.5 w-3.5 mr-1" /> Compare</>}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           )}
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 space-y-3 text-sm">
-        <div className="flex flex-wrap gap-1">
-          {c.techniques.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}
-        </div>
-        <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5 text-warning" /> {c.rating} ({c.reviews})</span>
-          <span>{c.yearsExperience}+ yrs</span>
-          <span>{c.doctorLed ? "Doctor-led" : "Technician-assisted"}</span>
-        </div>
-        <div className="text-xs text-muted-foreground">
-          Price/graft: <span className="text-foreground font-medium">{c.pricePerGraft.currency} {c.pricePerGraft.low}–{c.pricePerGraft.high}</span>
-        </div>
-        {c.redFlags && c.redFlags.length > 0 && (
-          <div className="flex gap-2 text-xs text-warning"><ShieldAlert className="h-4 w-4 shrink-0" /> {c.redFlags[0]}</div>
-        )}
-        <p className="text-xs text-muted-foreground italic">Sample data — for demonstration only.</p>
-      </CardContent>
-      <div className="p-4 pt-0 flex gap-2">
-        <Button size="sm" variant={shortlisted ? "default" : "outline"} onClick={onToggle}>
-          {shortlisted ? "In shortlist" : "Add to shortlist"}
-        </Button>
-        <Button size="sm" variant="ghost" asChild>
-          <Link to="/clinics">View details</Link>
-        </Button>
+        </section>
       </div>
-    </Card>
-  );
-}
-
-const checklist = [
-  "Surgeon personally performs hairline design & key extraction",
-  "Detailed donor mapping & density measurement provided",
-  "Realistic counseling on density and limits",
-  "Written quote with graft count and inclusions",
-  "Hygiene & sterilization protocols visible",
-  "Clear follow-up & emergency contact plan",
-  "Refund / cancellation policy in writing",
-  "Negative reviews are not all generic 5-star or 1-star",
-];
-
-function ChecklistCard() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5 text-primary" /> How to select a clinic</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className="grid sm:grid-cols-2 gap-2 text-sm">
-          {checklist.map((c) => (
-            <li key={c} className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" /> {c}</li>
-          ))}
-        </ul>
-      </CardContent>
-    </Card>
+    </div>
   );
 }
