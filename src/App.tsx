@@ -19,7 +19,7 @@ import CostEstimator from "@/pages/CostEstimator";
 import Recovery from "@/pages/Recovery";
 import Medications from "@/pages/Medications";
 import PreOp from "@/pages/PreOp";
-import Planning from "@/pages/Planning";
+
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
 import View360 from "@/pages/View360";
