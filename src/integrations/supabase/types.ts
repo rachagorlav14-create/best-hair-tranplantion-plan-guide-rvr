@@ -14,10 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      clinic_submissions: {
+        Row: {
+          city: string | null
+          clinic_name: string
+          country: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          phone: string | null
+          status: string | null
+          submitted_by: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          clinic_name: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          clinic_name?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       clinics: {
         Row: {
           address: string | null
+          admin_notes: string | null
           before_after: boolean | null
+          branch_name: string | null
+          brand_name: string | null
           city: string
           cons: string[] | null
           consultation_fee: number | null
@@ -26,13 +101,23 @@ export type Database = {
           created_at: string
           created_by: string | null
           currency: string | null
+          data_confidence: string | null
+          data_source: string | null
+          doctor_led: boolean | null
           doctors: string[] | null
           emi_available: boolean | null
+          google_maps_url: string | null
+          google_place_id: string | null
           google_rating: number | null
+          google_rating_count: number | null
           id: string
+          last_synced_at: string | null
+          last_verified_at: string | null
           min_package_price: number | null
           name: string
           notes: string | null
+          package_price_high: number | null
+          package_price_low: number | null
           price_per_graft_high: number | null
           price_per_graft_low: number | null
           pros: string[] | null
@@ -52,7 +137,10 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          admin_notes?: string | null
           before_after?: boolean | null
+          branch_name?: string | null
+          brand_name?: string | null
           city: string
           cons?: string[] | null
           consultation_fee?: number | null
@@ -61,13 +149,23 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          data_confidence?: string | null
+          data_source?: string | null
+          doctor_led?: boolean | null
           doctors?: string[] | null
           emi_available?: boolean | null
+          google_maps_url?: string | null
+          google_place_id?: string | null
           google_rating?: number | null
+          google_rating_count?: number | null
           id?: string
+          last_synced_at?: string | null
+          last_verified_at?: string | null
           min_package_price?: number | null
           name: string
           notes?: string | null
+          package_price_high?: number | null
+          package_price_low?: number | null
           price_per_graft_high?: number | null
           price_per_graft_low?: number | null
           pros?: string[] | null
@@ -87,7 +185,10 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          admin_notes?: string | null
           before_after?: boolean | null
+          branch_name?: string | null
+          brand_name?: string | null
           city?: string
           cons?: string[] | null
           consultation_fee?: number | null
@@ -96,13 +197,23 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           currency?: string | null
+          data_confidence?: string | null
+          data_source?: string | null
+          doctor_led?: boolean | null
           doctors?: string[] | null
           emi_available?: boolean | null
+          google_maps_url?: string | null
+          google_place_id?: string | null
           google_rating?: number | null
+          google_rating_count?: number | null
           id?: string
+          last_synced_at?: string | null
+          last_verified_at?: string | null
           min_package_price?: number | null
           name?: string
           notes?: string | null
+          package_price_high?: number | null
+          package_price_low?: number | null
           price_per_graft_high?: number | null
           price_per_graft_low?: number | null
           pros?: string[] | null
@@ -121,6 +232,125 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      doctors: {
+        Row: {
+          bio: string | null
+          city: string | null
+          clinic_id: string | null
+          country: string | null
+          created_at: string
+          full_name: string
+          id: string
+          photo_url: string | null
+          profile_url: string | null
+          qualification: string | null
+          reputation_notes: string | null
+          techniques: string[] | null
+          updated_at: string
+          verification_status: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          clinic_id?: string | null
+          country?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          photo_url?: string | null
+          profile_url?: string | null
+          qualification?: string | null
+          reputation_notes?: string | null
+          techniques?: string[] | null
+          updated_at?: string
+          verification_status?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          clinic_id?: string | null
+          country?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          photo_url?: string | null
+          profile_url?: string | null
+          qualification?: string | null
+          reputation_notes?: string | null
+          techniques?: string[] | null
+          updated_at?: string
+          verification_status?: string | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctors_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      image_quality_scores: {
+        Row: {
+          angle_score: number | null
+          blur_score: number | null
+          created_at: string
+          id: string
+          issues: string[] | null
+          job_id: string | null
+          lighting_score: number | null
+          overall_score: number | null
+          photo_id: string | null
+          scalp_visibility_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          angle_score?: number | null
+          blur_score?: number | null
+          created_at?: string
+          id?: string
+          issues?: string[] | null
+          job_id?: string | null
+          lighting_score?: number | null
+          overall_score?: number | null
+          photo_id?: string | null
+          scalp_visibility_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          angle_score?: number | null
+          blur_score?: number | null
+          created_at?: string
+          id?: string
+          issues?: string[] | null
+          job_id?: string | null
+          lighting_score?: number | null
+          overall_score?: number | null
+          photo_id?: string | null
+          scalp_visibility_score?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "image_quality_scores_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "photo_analysis_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "image_quality_scores_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "scalp_photos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       medications: {
         Row: {
@@ -169,6 +399,110 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      photo_analysis_jobs: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          inputs: Json | null
+          source: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          inputs?: Json | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          inputs?: Json | null
+          source?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      photo_analysis_results: {
+        Row: {
+          affected_zones: string[] | null
+          confidence_score: number | null
+          created_at: string
+          donor_quality: string | null
+          graft_estimate_high: number | null
+          graft_estimate_low: number | null
+          id: string
+          is_demo: boolean | null
+          job_id: string | null
+          ludwig_stage: string | null
+          norwood_stage: string | null
+          notes: string | null
+          pattern: string | null
+          raw_response: Json | null
+          risk_flags: string[] | null
+          sessions_required: number | null
+          user_id: string | null
+          zone_split: Json | null
+        }
+        Insert: {
+          affected_zones?: string[] | null
+          confidence_score?: number | null
+          created_at?: string
+          donor_quality?: string | null
+          graft_estimate_high?: number | null
+          graft_estimate_low?: number | null
+          id?: string
+          is_demo?: boolean | null
+          job_id?: string | null
+          ludwig_stage?: string | null
+          norwood_stage?: string | null
+          notes?: string | null
+          pattern?: string | null
+          raw_response?: Json | null
+          risk_flags?: string[] | null
+          sessions_required?: number | null
+          user_id?: string | null
+          zone_split?: Json | null
+        }
+        Update: {
+          affected_zones?: string[] | null
+          confidence_score?: number | null
+          created_at?: string
+          donor_quality?: string | null
+          graft_estimate_high?: number | null
+          graft_estimate_low?: number | null
+          id?: string
+          is_demo?: boolean | null
+          job_id?: string | null
+          ludwig_stage?: string | null
+          norwood_stage?: string | null
+          notes?: string | null
+          pattern?: string | null
+          raw_response?: Json | null
+          risk_flags?: string[] | null
+          sessions_required?: number | null
+          user_id?: string | null
+          zone_split?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "photo_analysis_results_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "photo_analysis_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
