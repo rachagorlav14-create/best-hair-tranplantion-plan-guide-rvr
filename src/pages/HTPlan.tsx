@@ -67,7 +67,7 @@ export default function HTPlan() {
             <div className="text-xs uppercase tracking-wider text-emerald">Affected zones</div>
             <div className="mt-3 flex flex-wrap gap-2">
               {(a.affectedZones || []).map((z) => (
-                <span key={z} className="px-3 py-1.5 rounded-full bg-secondary/60 text-sm border border-border/40">{z.replaceAll("_", " ")}</span>
+                <span key={z} className="px-3 py-1.5 rounded-full bg-secondary/60 text-sm border border-border/40">{z.split("_").join(" ")}</span>
               ))}
               {(!a.affectedZones || a.affectedZones.length === 0) && <span className="text-muted-foreground text-sm">None recorded.</span>}
             </div>
@@ -76,7 +76,7 @@ export default function HTPlan() {
                 <div className="text-xs uppercase tracking-wider text-muted-foreground">Area-wise graft split</div>
                 {Object.entries(a.zoneSplit).map(([zone, [lo, hi]]) => (
                   <div key={zone} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground capitalize">{zone.replaceAll("_", " ")}</span>
+                    <span className="text-muted-foreground capitalize">{zone.split("_").join(" ")}</span>
                     <span className="font-medium">{lo.toLocaleString()}–{hi.toLocaleString()}</span>
                   </div>
                 ))}
