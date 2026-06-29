@@ -1,21 +1,20 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { Menu, X, Compass, LogOut, ShieldCheck } from "lucide-react";
+import { Menu, X, Compass, LogOut, ShieldCheck, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 const primaryNav = [
-  { to: "/planning", label: "Planning" },
-  { to: "/profile", label: "Profile" },
+  { to: "/planning", label: "HT Plan" },
   { to: "/photo-assessment", label: "Photos" },
-  { to: "/calculator", label: "Calculator" },
+  { to: "/view-360", label: "360°" },
+  { to: "/calculator", label: "Grafts" },
   { to: "/clinics", label: "Clinics" },
-  { to: "/compare", label: "Compare" },
+  { to: "/doctors", label: "Doctors" },
+  { to: "/baldness-library", label: "Library" },
   { to: "/cost", label: "Cost" },
-  { to: "/pre-op", label: "Pre-Op" },
-  { to: "/recovery", label: "Post-Op" },
-  { to: "/medications", label: "Meds" },
+  { to: "/recovery", label: "Recovery" },
   { to: "/learn", label: "Learn" },
 ];
 
@@ -24,109 +23,83 @@ export default function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
   const nav = useNavigate();
 
-  const handleSignOut = async () => {
-    await signOut();
-    nav("/");
+  const handleSignOut = async () => { await signOut(); nav("/"); };
+
+  const toggleTheme = () => {
+    document.documentElement.classList.toggle("light");
+    localStorage.setItem("htc.theme", document.documentElement.classList.contains("light") ? "light" : "dark");
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/60 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between gap-3">
-        <Link to="/" className="flex items-center gap-2 font-display font-bold text-lg shrink-0">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground shadow-soft">
+        <Link to="/" className="flex items-center gap-2.5 font-display font-bold text-lg shrink-0 group">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-gold text-primary-foreground shadow-glow transition-transform group-hover:scale-105">
             <Compass className="h-5 w-5" />
           </span>
-          <span>HT Compass</span>
+          <span className="hidden sm:inline tracking-tight">HT <span className="text-gradient-gold">Compass</span></span>
         </Link>
-        <nav className="hidden xl:flex items-center gap-1 flex-1 justify-center">
+
+        <nav className="hidden lg:flex items-center gap-0.5 flex-1 justify-center">
           {primaryNav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               className={({ isActive }) =>
                 cn(
-                  "px-2.5 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap",
-                  isActive ? "bg-secondary text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+                  isActive
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
                 )
               }
-            >
-              {n.label}
-            </NavLink>
+            >{n.label}</NavLink>
           ))}
           {isAdmin && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                cn(
-                  "px-2.5 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap inline-flex items-center gap-1",
-                  isActive ? "bg-secondary text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )
-              }
-            >
+            <NavLink to="/admin" className={({ isActive }) =>
+              cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-all inline-flex items-center gap-1",
+                 isActive ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-secondary/60")}>
               <ShieldCheck className="h-3.5 w-3.5" /> Admin
             </NavLink>
           )}
         </nav>
-        <div className="hidden xl:flex items-center gap-2 shrink-0">
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="h-9 w-9">
+            <Sun className="h-4 w-4 hidden [.light_&]:block" />
+            <Moon className="h-4 w-4 block [.light_&]:hidden" />
+          </Button>
           {user ? (
-            <>
-              <span className="text-xs text-muted-foreground max-w-[140px] truncate">{user.email}</span>
-              <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </>
+            <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out" className="h-9 w-9">
+              <LogOut className="h-4 w-4" />
+            </Button>
           ) : (
-            <>
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/auth">Sign in</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link to="/auth">Get started</Link>
-              </Button>
-            </>
+            <Button size="sm" asChild className="bg-gradient-gold text-primary-foreground hover:opacity-90 h-9 rounded-lg">
+              <Link to="/auth">Sign in</Link>
+            </Button>
           )}
+          <button className="lg:hidden p-2" onClick={() => setOpen((s) => !s)} aria-label="Menu">
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
-        <button className="xl:hidden p-2" onClick={() => setOpen((s) => !s)} aria-label="Toggle menu">
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
       </div>
+
       {open && (
-        <div className="xl:hidden border-t bg-background max-h-[80vh] overflow-y-auto">
-          <div className="container py-3 flex flex-col gap-1">
+        <div className="lg:hidden border-t border-border/40 glass-strong max-h-[80vh] overflow-y-auto">
+          <div className="container py-3 grid grid-cols-2 gap-1">
             {primaryNav.map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                onClick={() => setOpen(false)}
+              <NavLink key={n.to} to={n.to} onClick={() => setOpen(false)}
                 className={({ isActive }) =>
-                  cn(
-                    "px-3 py-2 rounded-md text-sm font-medium",
-                    isActive ? "bg-secondary text-primary" : "text-muted-foreground hover:bg-muted"
-                  )
-                }
-              >
+                  cn("px-3 py-2.5 rounded-lg text-sm font-medium",
+                     isActive ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-secondary/60")}>
                 {n.label}
               </NavLink>
             ))}
             {isAdmin && (
-              <NavLink to="/admin" onClick={() => setOpen(false)} className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground">
-                Admin
+              <NavLink to="/admin" onClick={() => setOpen(false)} className="px-3 py-2.5 rounded-lg text-sm font-medium text-primary col-span-2 bg-primary/10">
+                <ShieldCheck className="h-3.5 w-3.5 inline mr-1" /> Admin Dashboard
               </NavLink>
             )}
-            <div className="border-t mt-2 pt-2">
-              {user ? (
-                <>
-                  <div className="px-3 text-xs text-muted-foreground truncate">{user.email}</div>
-                  <Button variant="outline" size="sm" className="mt-2 w-full" onClick={() => { setOpen(false); handleSignOut(); }}>
-                    Sign out
-                  </Button>
-                </>
-              ) : (
-                <Button size="sm" className="w-full" asChild>
-                  <Link to="/auth" onClick={() => setOpen(false)}>Sign in / Sign up</Link>
-                </Button>
-              )}
-            </div>
           </div>
         </div>
       )}

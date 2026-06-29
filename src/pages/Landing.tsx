@@ -1,153 +1,211 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Disclaimer } from "@/components/Disclaimer";
-import { ArrowRight, Calculator, Camera, ClipboardList, Hospital, HeartPulse, Pill, ShieldCheck, Sparkles } from "lucide-react";
-import { FAQS } from "@/data/sample";
-import hero from "@/assets/hero.jpg";
-
-const features = [
-  { icon: Calculator, title: "Stage & Graft Calculator", body: "Guided wizard estimates Norwood/Ludwig stage and a graft range with confidence level.", to: "/calculator" },
-  { icon: Camera, title: "Photo Assessment", body: "Photo checklist and visual planner to mark thinning areas. Privacy-first.", to: "/photo-assessment" },
-  { icon: Hospital, title: "Clinic Directory", body: "Compare clinics across India, Turkey, Thailand, UAE, UK, USA & Europe.", to: "/clinics" },
-  { icon: ClipboardList, title: "Cost Estimator", body: "Low/medium/high cost ranges by country, technique and add-ons.", to: "/cost" },
-  { icon: HeartPulse, title: "Recovery Tracker", body: "Day-by-day timeline from Day 0 through 12-month maturity with daily checklist.", to: "/recovery" },
-  { icon: Pill, title: "Medication Tracker", body: "Educational pages and a reminder log for minoxidil, finasteride, post-op meds & more.", to: "/medications" },
-];
+import { ArrowRight, Camera, Calculator, Hospital, Sparkles, ShieldCheck, Activity, Pill, Eye, MapPin } from "lucide-react";
+import { BALDNESS_STAGES } from "@/data/baldnessStages";
 
 const steps = [
-  { n: "01", title: "Learn the basics", body: "Browse techniques, baldness stages and realistic expectations." },
-  { n: "02", title: "Run the calculator", body: "Get a stage estimate and graft range based on guided inputs." },
-  { n: "03", title: "Compare clinics", body: "Shortlist by technique, doctor involvement, price and verification." },
-  { n: "04", title: "Plan & recover", body: "Track meds, daily care, and photo progress through 12+ months." },
+  { n: "1", title: "Upload scalp photos", body: "Front, temples, top, crown, donor.", icon: Camera },
+  { n: "2", title: "Get AI-assisted estimate", body: "Norwood/Ludwig stage + graft range.", icon: Sparkles },
+  { n: "3", title: "Compare clinics", body: "India + global. Filter, shortlist, compare.", icon: Hospital },
+  { n: "4", title: "Plan & recover", body: "Pre-op, post-op, meds, photo progress.", icon: Activity },
 ];
+
+const features = [
+  { icon: Sparkles, title: "AI Photo Assessment", body: "Multi-angle scalp photos analysed for stage, donor and graft estimate.", to: "/photo-assessment", grad: "bg-gradient-gold" },
+  { icon: Eye, title: "360° Baldness Map", body: "Rotating view of affected zones and planned transplant areas.", to: "/view-360", grad: "bg-gradient-teal" },
+  { icon: Calculator, title: "Graft Calculator", body: "Area-wise graft split with low/medium/high density plans.", to: "/calculator", grad: "bg-gradient-emerald" },
+  { icon: Hospital, title: "Clinic Discovery", body: "India + worldwide directory with verification and pricing labels.", to: "/clinics", grad: "bg-gradient-gold" },
+  { icon: MapPin, title: "Doctor Finder", body: "Surgeon profiles with technique focus and verification badge.", to: "/doctors", grad: "bg-gradient-teal" },
+  { icon: Pill, title: "Recovery & Meds", body: "Day-by-day timeline, daily logs and medication reminders.", to: "/recovery", grad: "bg-gradient-emerald" },
+];
+
+const stageCards = BALDNESS_STAGES.slice(0, 6);
 
 export default function Landing() {
   return (
     <div>
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-soft" />
-        <div className="container relative grid lg:grid-cols-2 gap-12 py-16 md:py-24 items-center">
-          <div className="space-y-6 animate-fade-in">
-            <span className="inline-flex items-center gap-2 rounded-full border bg-card/60 backdrop-blur px-3 py-1 text-xs font-medium text-muted-foreground">
+        <div className="absolute inset-0 bg-gradient-aurora pointer-events-none" />
+        <div className="container relative pt-16 pb-24 md:pt-24 md:pb-32 grid lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-7 space-y-7 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-gold text-xs font-medium">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Education-first hair transplant planning
-            </span>
-            <h1 className="font-display text-4xl md:text-6xl font-bold leading-tight">
-              Make your hair restoration decision <span className="text-gradient">with clarity</span>.
+              <span className="text-primary">AI-assisted preliminary estimate</span>
+              <span className="text-muted-foreground">· Educational only</span>
+            </div>
+            <h1 className="font-display text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight">
+              Plan your <span className="text-gradient-gold">hair transplant</span><br />
+              with <span className="text-gradient-teal">clarity</span>.
             </h1>
-            <p className="text-lg text-muted-foreground max-w-xl">
-              HT Compass helps you understand baldness stages, estimate graft ranges, discover clinics,
-              plan costs, and track recovery — all in one calm, evidence-aware space.
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
+              Upload photos, get a preliminary stage and graft estimate, compare clinics worldwide,
+              and follow a calm pre-op and recovery plan — all in one premium space.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" asChild>
-                <Link to="/calculator">Start free assessment <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Button size="lg" asChild className="bg-gradient-gold text-primary-foreground hover:opacity-90 rounded-xl h-12 px-6 shadow-glow">
+                <Link to="/photo-assessment">Try free assessment <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link to="/learn">Learn the basics</Link>
+              <Button size="lg" variant="outline" asChild className="rounded-xl h-12 px-6 border-border/60">
+                <Link to="/clinics">Explore clinics</Link>
               </Button>
             </div>
-            <div className="flex items-center gap-4 pt-2 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> No diagnosis claims</span>
-              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> Privacy-first photos</span>
-              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-success" /> Sample-data clarity</span>
+            <div className="flex flex-wrap gap-4 pt-4 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald" /> No diagnosis claims</span>
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald" /> Use without signup</span>
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-emerald" /> Photos stay private</span>
             </div>
           </div>
-          <div className="relative">
-            <div className="absolute -inset-6 bg-gradient-hero opacity-20 blur-3xl rounded-full" />
-            <img
-              src={hero}
-              alt="Calm topographic illustration of a scalp with follicle markers, representing hair-transplant planning"
-              width={1600}
-              height={1200}
-              className="relative rounded-2xl shadow-elegant border border-border/50 w-full h-auto"
-            />
+
+          {/* Premium assessment-score preview card */}
+          <div className="lg:col-span-5 relative animate-fade-in">
+            <div className="absolute -inset-8 bg-gradient-gold opacity-20 blur-3xl rounded-full pointer-events-none" />
+            <div className="relative glass-strong rounded-3xl p-6 shadow-elegant border border-border/40 animate-float">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wider">Sample assessment</div>
+                  <div className="font-display text-lg font-semibold mt-1">Your HT readiness</div>
+                </div>
+                <div className="relative h-20 w-20">
+                  <svg viewBox="0 0 100 100" className="absolute inset-0">
+                    <circle cx="50" cy="50" r="42" strokeWidth="8" stroke="hsl(var(--secondary))" fill="none" />
+                    <circle cx="50" cy="50" r="42" strokeWidth="8" stroke="url(#gold)" fill="none"
+                      strokeDasharray="264" strokeDashoffset="66" strokeLinecap="round" transform="rotate(-90 50 50)" />
+                    <defs>
+                      <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stopColor="hsl(42 75% 60%)" />
+                        <stop offset="1" stopColor="hsl(35 80% 60%)" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="font-display font-bold text-xl text-gradient-gold leading-none">75</div>
+                      <div className="text-[9px] text-muted-foreground">/100</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  { label: "Estimated stage", value: "Norwood 3V", color: "bg-gradient-gold" },
+                  { label: "Graft range", value: "3,200 – 4,500", color: "bg-gradient-teal" },
+                  { label: "Donor quality", value: "Good", color: "bg-gradient-emerald" },
+                  { label: "Sessions", value: "1 (mega)", color: "bg-gradient-gold" },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center justify-between p-3 rounded-xl bg-secondary/40 border border-border/30">
+                    <span className="text-xs text-muted-foreground">{row.label}</span>
+                    <span className="text-sm font-semibold">{row.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 text-[10px] text-muted-foreground/80 leading-relaxed">
+                Approximate educational estimate only — not a diagnosis or treatment plan.
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* SAFETY DISCLAIMER */}
-      <section className="container -mt-6 mb-12 relative">
-        <Disclaimer tone="warning" title="Educational tool — not medical advice">
-          HT Compass does not diagnose conditions, prescribe medication or replace consultation with a
-          qualified <strong>dermatologist or hair-transplant surgeon</strong>. All estimates are rule-based
-          ranges and demonstration data. Always verify with a licensed doctor before any treatment.
-        </Disclaimer>
+      {/* STEPS */}
+      <section className="container pb-16">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {steps.map((s) => (
+            <div key={s.n} className="glass rounded-2xl p-5 hover:border-primary/40 transition-colors">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-gold/20 text-primary font-display font-bold">{s.n}</span>
+                <s.icon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="font-semibold">{s.title}</div>
+              <div className="text-sm text-muted-foreground mt-1">{s.body}</div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* FEATURES */}
-      <section className="container py-12 md:py-16">
-        <div className="max-w-2xl mb-10">
-          <h2 className="font-display text-3xl md:text-4xl font-bold">Everything to plan your journey</h2>
-          <p className="text-muted-foreground mt-3">From first question to twelve-month maturity photo.</p>
+      <section className="container pb-16">
+        <div className="mb-10">
+          <div className="text-xs uppercase tracking-wider text-primary mb-2">What's inside</div>
+          <h2 className="font-display text-3xl md:text-5xl font-bold">A complete HT planning toolkit</h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map(({ icon: Icon, title, body, to }) => (
-            <Link key={title} to={to} className="group">
-              <Card className="h-full bg-gradient-card hover:shadow-card transition-shadow border-border/60">
-                <CardHeader>
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary mb-2 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <CardTitle className="text-lg">{title}</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">{body}</CardContent>
-              </Card>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {features.map((f) => (
+            <Link key={f.title} to={f.to} className="group">
+              <div className="glass rounded-2xl p-6 h-full hover:border-primary/40 transition-all hover:-translate-y-1">
+                <div className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${f.grad} text-primary-foreground mb-4 shadow-soft`}>
+                  <f.icon className="h-5 w-5" />
+                </div>
+                <div className="font-display font-semibold text-lg">{f.title}</div>
+                <div className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{f.body}</div>
+                <div className="mt-4 text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1">
+                  Open <ArrowRight className="h-3 w-3" />
+                </div>
+              </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="bg-gradient-soft py-16">
-        <div className="container">
-          <h2 className="font-display text-3xl md:text-4xl font-bold mb-10">How it works</h2>
-          <div className="grid md:grid-cols-4 gap-5">
-            {steps.map((s) => (
-              <Card key={s.n} className="border-border/60">
-                <CardContent className="pt-6">
-                  <div className="text-3xl font-display font-bold text-primary/40">{s.n}</div>
-                  <h3 className="font-semibold mt-2">{s.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">{s.body}</p>
-                </CardContent>
-              </Card>
-            ))}
+      {/* BALDNESS LIBRARY PREVIEW */}
+      <section className="container pb-16">
+        <div className="flex items-end justify-between mb-6">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-accent mb-2">Baldness library</div>
+            <h2 className="font-display text-3xl md:text-4xl font-bold">Know your stage</h2>
+          </div>
+          <Button variant="ghost" size="sm" asChild><Link to="/baldness-library">View all <ArrowRight className="ml-1 h-3 w-3" /></Link></Button>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          {stageCards.map((s) => (
+            <Link to="/baldness-library" key={s.key} className="glass rounded-xl p-4 hover:border-primary/40 transition-colors group">
+              <div className="aspect-square rounded-lg bg-gradient-aurora flex items-center justify-center mb-3 border border-border/30">
+                <span className="font-display font-bold text-2xl text-gradient-gold">{s.shortLabel}</span>
+              </div>
+              <div className="text-xs font-medium truncate">{s.label}</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{s.graftRange[0] || "—"}–{s.graftRange[1] || "—"} grafts</div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* DISCLAIMER STRIP */}
+      <section className="container pb-16">
+        <div className="glass-gold rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start gap-4">
+          <ShieldCheck className="h-8 w-8 text-primary shrink-0" />
+          <div className="text-sm leading-relaxed">
+            <strong className="text-foreground">Important:</strong>{" "}
+            <span className="text-muted-foreground">
+              Every estimate, stage suggestion, graft range, cost projection, clinic listing and medication note in HT Compass
+              is an approximate educational reference. It is <strong>not medical advice, not a diagnosis</strong>, and not a
+              substitute for in-person consultation with a qualified dermatologist or hair-transplant surgeon. Final graft
+              count, technique, medication and pricing depend on donor quality, hair caliber, scalp condition, doctor
+              evaluation and clinic package.
+            </span>
           </div>
         </div>
       </section>
 
-      {/* CTA strip */}
-      <section className="container py-16">
-        <div className="rounded-2xl bg-gradient-hero text-primary-foreground p-8 md:p-12 shadow-elegant relative overflow-hidden">
-          <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
+      {/* CTA */}
+      <section className="container pb-20">
+        <div className="relative rounded-3xl bg-gradient-hero glass border border-border/40 p-8 md:p-12 overflow-hidden">
+          <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-gradient-gold opacity-30 blur-3xl" />
           <div className="relative grid md:grid-cols-2 gap-6 items-center">
             <div>
-              <h3 className="font-display text-2xl md:text-3xl font-bold">Try the Stage & Graft Calculator</h3>
-              <p className="opacity-90 mt-2">A 2-minute guided wizard returns a Norwood/Ludwig estimate, graft range, and a confidence level.</p>
+              <h3 className="font-display text-3xl md:text-4xl font-bold">Start your free assessment</h3>
+              <p className="text-muted-foreground mt-3">No signup needed. Save your plan, photos and clinic shortlist by creating a free profile after.</p>
             </div>
-            <div className="md:text-right">
-              <Button size="lg" variant="secondary" asChild>
-                <Link to="/calculator">Launch calculator <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <div className="md:text-right flex md:justify-end gap-3 flex-wrap">
+              <Button size="lg" asChild className="bg-gradient-gold text-primary-foreground rounded-xl h-12 px-6">
+                <Link to="/photo-assessment">Upload photos <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild className="rounded-xl h-12 px-6 border-border/60">
+                <Link to="/calculator">Just estimate grafts</Link>
               </Button>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* FAQ */}
-      <section className="container py-12">
-        <h2 className="font-display text-3xl md:text-4xl font-bold mb-6">Frequently asked</h2>
-        <Accordion type="single" collapsible className="max-w-3xl">
-          {FAQS.map((f, i) => (
-            <AccordionItem key={i} value={`item-${i}`}>
-              <AccordionTrigger className="text-left">{f.q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
       </section>
     </div>
   );
