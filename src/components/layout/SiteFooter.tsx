@@ -3,14 +3,14 @@ import { Compass } from "lucide-react";
 
 export default function SiteFooter() {
   return (
-    <footer className="border-t bg-gradient-soft mt-20">
+    <footer className="border-t border-border/40 bg-gradient-hero mt-20">
       <div className="container py-12 grid gap-8 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2 font-display font-bold">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-hero text-primary-foreground">
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-gold text-primary-foreground">
               <Compass className="h-4 w-4" />
             </span>
-            HT Compass
+            HT <span className="text-gradient-gold">Compass</span>
           </div>
           <p className="mt-3 text-sm text-muted-foreground">
             Education-first planning support for hair transplant decisions. Not a medical diagnosis.
