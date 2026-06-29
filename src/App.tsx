@@ -22,6 +22,10 @@ import PreOp from "@/pages/PreOp";
 import Planning from "@/pages/Planning";
 import Profile from "@/pages/Profile";
 import Admin from "@/pages/Admin";
+import View360 from "@/pages/View360";
+import HTPlan from "@/pages/HTPlan";
+import Doctors from "@/pages/Doctors";
+import BaldnessLibrary from "@/pages/BaldnessLibrary";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
