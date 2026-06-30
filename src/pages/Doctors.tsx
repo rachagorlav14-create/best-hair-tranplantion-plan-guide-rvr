@@ -25,7 +25,10 @@ export default function Doctors() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("doctors").select("*").order("full_name");
+      const { data } = await supabase
+        .from("doctors")
+        .select("id, full_name, qualification, years_experience, city, country, techniques, bio, verification_status, clinic_id")
+        .order("full_name");
       setDoctors(data || []);
       setLoading(false);
     })();
