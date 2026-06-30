@@ -44,6 +44,35 @@ export type Database = {
         }
         Relationships: []
       }
+      clinic_admin_notes: {
+        Row: {
+          clinic_id: string
+          notes: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          clinic_id: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          notes?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_admin_notes_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: true
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_submissions: {
         Row: {
           city: string | null
@@ -89,7 +118,6 @@ export type Database = {
       clinics: {
         Row: {
           address: string | null
-          admin_notes: string | null
           before_after: boolean | null
           branch_name: string | null
           brand_name: string | null
@@ -137,7 +165,6 @@ export type Database = {
         }
         Insert: {
           address?: string | null
-          admin_notes?: string | null
           before_after?: boolean | null
           branch_name?: string | null
           brand_name?: string | null
@@ -185,7 +212,6 @@ export type Database = {
         }
         Update: {
           address?: string | null
-          admin_notes?: string | null
           before_after?: boolean | null
           branch_name?: string | null
           brand_name?: string | null
