@@ -259,6 +259,35 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_admin_notes: {
+        Row: {
+          created_at: string
+          doctor_id: string
+          reputation_notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          doctor_id: string
+          reputation_notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          doctor_id?: string
+          reputation_notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_admin_notes_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: true
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           bio: string | null
@@ -271,7 +300,6 @@ export type Database = {
           photo_url: string | null
           profile_url: string | null
           qualification: string | null
-          reputation_notes: string | null
           techniques: string[] | null
           updated_at: string
           verification_status: string | null
@@ -288,7 +316,6 @@ export type Database = {
           photo_url?: string | null
           profile_url?: string | null
           qualification?: string | null
-          reputation_notes?: string | null
           techniques?: string[] | null
           updated_at?: string
           verification_status?: string | null
@@ -305,7 +332,6 @@ export type Database = {
           photo_url?: string | null
           profile_url?: string | null
           qualification?: string | null
-          reputation_notes?: string | null
           techniques?: string[] | null
           updated_at?: string
           verification_status?: string | null
